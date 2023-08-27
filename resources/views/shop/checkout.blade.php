@@ -1,44 +1,39 @@
 <x-app-layout>
 
-    <div class="w-full h-[500px] flex justify-center items-center">
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
 
-        <form name="FormPagamento" id="FormPagamento" action="https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html" method="get">
-            <input type="hidden" name="code" id="code" value="{{ $code->code }}" />
-            <input type="hidden" name="iot" value="button" />
-            <x-button
-                id="BotaoPagamento"
-                name="submit"
-                class="h-[100px]">
-                Pague com PagSeguro - é rápido, grátis e seguro!
-            </x-button>
-        </form>
+    @php
+    //use Illuminate\Support\Facades\Auth;
+    MercadoPago\SDK::setAccessToken('TEST-3139979623211968-060716-10ec8969b083a7323e0f7c0b5088ad9e-396778896');
 
-    </div>
+    // Cria um objeto de preferência
+    $preference = new MercadoPago\Preference();
 
-    <script type="text/javascript" src="https://stc.pagseguro.uol.com.br/pagseguro/api/v2/checkout/pagseguro.lightbox.js"></script>
-    <script type="text/javascript" src="https://zeptojs.com/zepto.min.js"></script>
+    // Cria um item na preferência
+    $item = new MercadoPago\Item();
+    $item->title = 'Meu produto';
+    $item->quantity = 1;
+    $item->unit_price = 75.56;
+    $preference->items = array($item);
 
-    {{-- {{ $produtos }} --}}
-    {{-- @php
-        $total = 0
+    // Cria um pagador
+    $payer = new MercadoPago\Payer();
+    $payer->name = \Illuminate\Support\Facades\Auth::user()->firstname;
+    $payer->firstname = \Illuminate\Support\Facades\Auth::user()->firstname;
+    $payer->lastname = \Illuminate\Support\Facades\Auth::user()->lastname;
+    $payer->email = \Illuminate\Support\Facades\Auth::user()->email;
+    $preference->payer = $payer;
+
+
+    $preference->save();
+    
+    var_dump($preference);
     @endphp
 
-    @foreach ($produtos as $item)
-        <p>
-            {{ $item->short_description }}
+    <div id="wallet_container"></div>
 
-            @php
-            $total += $item->final_price
-            @endphp
-    @endforeach
-    </p>
-    <br>
-    Preco total {{ $total }} --}}
-
-    {{-- @php
-    var_dump($code)
-    @endphp --}}
-
-    <script>
+              
+    <script type="text/javascript">
+        window.location = '{{ $preference->init_point }}';
     </script>
 </x-app-layout>
